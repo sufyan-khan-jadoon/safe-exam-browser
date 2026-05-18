@@ -12,6 +12,7 @@ import authRoutes from "./routes/auth.routes";
 import verificationRoutes from "./routes/verification.routes";
 import passwordRoutes from "./routes/password.routes";
 import examRoutes from "./routes/exam.routes";
+import questionRoutes from "./routes/question.routes";
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/verification", verificationRoutes);
 app.use("/api/password", passwordRoutes);
 app.use("/api/exams", examRoutes);
+app.use("/api", questionRoutes); // Mounts /api/exams/... and /api/questions/...
 
 // Error Handler
 app.use(errorHandler);
