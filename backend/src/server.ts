@@ -20,9 +20,24 @@ const app = express();
 
 // Security Middlewares
 app.use(helmet());
+const allowedOrigins = [
+  env.CLIENT_URL,
+  "http://localhost:3000",
+];
+
 app.use(
   cors({
-    origin: env.CLIENT_URL,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isAllowed = allowedOrigins.includes(origin) || 
+                        origin.endsWith(".vercel.app") ||
+                        /^http:\/\/localhost:\d+$/.test(origin);
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
