@@ -15,25 +15,31 @@ export const asyncHandler = (fn: Function) => (req: Request, res: Response, next
 };
 
 export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
-  let error = { ...err };
-  error.message = err.message;
+  let statusCode = err.statusCode || 500;
+  let message = err.message || "Server Error";
 
-  console.error(err);
+  // Log error for debugging
+  console.error("Error details:", {
+    name: err.name,
+    message: err.message,
+    stack: err.stack,
+    code: err.code,
+  });
 
   // Prisma unique constraint violation
   if (err.code === "P2002") {
-    const message = "Duplicate field value entered";
-    error = new AppError(message, 400);
+    statusCode = 400;
+    message = "Duplicate field value entered";
   }
 
   // Zod validation error
   if (err.name === "ZodError") {
-    const message = err.errors.map((e: any) => e.message).join(", ");
-    error = new AppError(message, 400);
+    statusCode = 400;
+    message = err.errors.map((e: any) => e.message).join(", ");
   }
 
-  res.status(error.statusCode || 500).json({
+  res.status(statusCode).json({
     success: false,
-    error: error.message || "Server Error",
+    error: message,
   });
 };
