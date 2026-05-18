@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { examService } from "@/lib/exam.service";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,9 @@ const editExamSchema = z
     path: ["examEndDate"],
   });
 
-export default function EditExamPage({ params }: { params: { id: string } }) {
+export default function EditExamPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
+  const examId = resolvedParams.id;
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
@@ -64,7 +66,7 @@ export default function EditExamPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const loadExam = async () => {
       try {
-        const res = await examService.getExamById(params.id);
+        const res = await examService.getExamById(examId);
         const exam = res.data;
 
         // Convert UTC dates to format supported by datetime-local input
@@ -95,12 +97,12 @@ export default function EditExamPage({ params }: { params: { id: string } }) {
     };
 
     loadExam();
-  }, [params.id, form, router]);
+  }, [examId, form, router]);
 
   const onSubmit = async (values: z.infer<typeof editExamSchema>) => {
     try {
       setIsLoading(true);
-      await examService.updateExam(params.id, values);
+      await examService.updateExam(examId, values);
       toast.success("Exam updated successfully!");
       router.push("/dashboard/exams");
     } catch (err: any) {
