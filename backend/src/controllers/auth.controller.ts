@@ -36,6 +36,7 @@ export const signup = asyncHandler(async (req: Request, res: Response) => {
       password: hashedPassword,
       verificationToken,
       verificationTokenExpiry,
+      isVerified: true, // Auto-verify in development / local testing for seamless setup
     },
     select: {
       id: true,
