@@ -14,6 +14,7 @@ import passwordRoutes from "./routes/password.routes";
 import examRoutes from "./routes/exam.routes";
 import questionRoutes from "./routes/question.routes";
 import studentRoutes from "./routes/student.routes";
+import proctorRoutes from "./routes/proctor.routes";
 
 const app = express();
 
@@ -61,6 +62,7 @@ app.use("/api/password", passwordRoutes);
 app.use("/api/exams", examRoutes);
 app.use("/api", questionRoutes); // Mounts /api/exams/... and /api/questions/...
 app.use("/api", studentRoutes); // Mounts student endpoints under /api/...
+app.use("/api", proctorRoutes); // Mounts proctoring endpoints under /api/...
 
 // Error Handler
 app.use(errorHandler);

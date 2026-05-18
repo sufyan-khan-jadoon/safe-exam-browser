@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { studentService } from "@/lib/student.service";
+import { proctorService } from "@/lib/proctor.service";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -96,12 +97,22 @@ export default function StudentExamPage({ params }: { params: { sessionId: strin
   useEffect(() => {
     if (loading || submitting) return;
 
+    const logSecurityViolation = async (type: string, desc: string) => {
+      try {
+        await proctorService.logViolation(type, desc);
+      } catch (err) {
+        console.error("Failed to log proctor violation:", err);
+      }
+    };
+
     const handleBlur = () => {
       setViolations((prev) => {
         const next = prev + 1;
         if (next >= 4) {
+          logSecurityViolation("auto_termination", "Exam auto-terminated due to exceeding 3 focus violations.");
           handleForceSubmit("Exam terminated due to multiple security violations.");
         } else {
+          logSecurityViolation("focus_loss", `Violation #${next}: Student switched focus / left screen.`);
           setShowWarning(true);
         }
         return next;
@@ -111,22 +122,32 @@ export default function StudentExamPage({ params }: { params: { sessionId: strin
     window.addEventListener("blur", handleBlur);
 
     // Kiosk blocks
-    const handleContextMenu = (e: MouseEvent) => e.preventDefault();
-    const handleCopyPaste = (e: ClipboardEvent) => e.preventDefault();
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      logSecurityViolation("right_click_block", "Attempted to open browser context menu");
+    };
+
+    const handleCopyPaste = (e: ClipboardEvent) => {
+      e.preventDefault();
+      logSecurityViolation("clipboard_block", `Attempted clipboard action: ${e.type}`);
+    };
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // F12 key
       if (e.key === "F12") {
         e.preventDefault();
+        logSecurityViolation("devtools_attempt", "Attempted to open DevTools via F12 key");
         toast.error("Developer Tools are locked during this test.");
       }
       // Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
       if (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) {
         e.preventDefault();
+        logSecurityViolation("devtools_attempt", "Attempted to open DevTools via inspect key combo");
         toast.error("Security lockout active.");
       }
       if (e.ctrlKey && e.key === "u") {
         e.preventDefault();
+        logSecurityViolation("source_code_view", "Attempted to view page source code");
         toast.error("Source viewing is disabled.");
       }
     };

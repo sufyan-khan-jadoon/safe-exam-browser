@@ -211,12 +211,20 @@ export default function ExamsPage() {
                   </Button>
                 )}
                 {exam.isPublished && (
-                  <Link
-                    href={`/dashboard/exams/${exam.id}/questions`}
-                    className={cn(buttonVariants({ size: "sm", variant: "secondary" }))}
-                  >
-                    Questions
-                  </Link>
+                  <div className="flex space-x-1.5">
+                    <Link
+                      href={`/dashboard/exams/${exam.id}/questions`}
+                      className={cn(buttonVariants({ size: "sm", variant: "secondary" }))}
+                    >
+                      Questions
+                    </Link>
+                    <Link
+                      href={`/dashboard/exams/${exam.id}/sessions`}
+                      className={cn(buttonVariants({ size: "sm", variant: "default" }))}
+                    >
+                      Proctor
+                    </Link>
+                  </div>
                 )}
               </CardFooter>
             </Card>
