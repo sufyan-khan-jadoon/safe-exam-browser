@@ -50,7 +50,7 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
   const [isFetching, setIsFetching] = useState(true);
 
   const form = useForm<z.infer<typeof editExamSchema>>({
-    resolver: zodResolver(editExamSchema),
+    resolver: zodResolver(editExamSchema) as any,
     defaultValues: {
       examTitle: "",
       examDescription: "",

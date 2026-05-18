@@ -46,7 +46,7 @@ export default function CreateExamPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof createExamSchema>>({
-    resolver: zodResolver(createExamSchema),
+    resolver: zodResolver(createExamSchema) as any,
     defaultValues: {
       examTitle: "",
       examDescription: "",
