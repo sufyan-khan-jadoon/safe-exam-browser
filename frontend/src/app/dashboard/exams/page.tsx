@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { examService, ExamData } from "@/lib/exam.service";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Loader2, Copy, Trash2, Edit, Calendar, Clock, Award, ShieldAlert, ExternalLink, Plus } from "lucide-react";
+import { Loader2, Copy, Check, Trash2, Edit, Calendar, Clock, Award, ShieldAlert, ExternalLink, Plus } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ export default function ExamsPage() {
   const [exams, setExams] = useState<ExamData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const fetchExams = async () => {
     try {
@@ -33,6 +34,10 @@ export default function ExamsPage() {
   const handleCopyKey = (key: string) => {
     navigator.clipboard.writeText(key);
     toast.success(`Exam key ${key} copied to clipboard!`);
+    setCopiedKey(key);
+    setTimeout(() => {
+      setCopiedKey(null);
+    }, 1500);
   };
 
   const handlePublish = async (id: string) => {
@@ -155,10 +160,14 @@ export default function ExamsPage() {
                     <span>{exam.examKey}</span>
                     <button
                       onClick={() => handleCopyKey(exam.examKey || "")}
-                      className="hover:text-primary transition-colors ml-1"
+                      className="hover:text-primary transition-all duration-200 ml-1 flex items-center justify-center relative active:scale-90"
                       title="Copy Key"
                     >
-                      <Copy className="w-3.5 h-3.5" />
+                      {copiedKey === exam.examKey ? (
+                        <Check className="w-3.5 h-3.5 text-green-500 animate-in zoom-in spin-in-12 duration-200" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5 transition-transform duration-200 hover:scale-110" />
+                      )}
                     </button>
                   </div>
                 </div>
