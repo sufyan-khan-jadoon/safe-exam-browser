@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { proctorService } from "@/lib/proctor.service";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,7 +37,9 @@ interface ExamSession {
   };
 }
 
-export default function ProctorSessionsPage({ params }: { params: { id: string } }) {
+export default function ProctorSessionsPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
+  const examId = resolvedParams.id;
   const router = useRouter();
   const [sessions, setSessions] = useState<ExamSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +51,7 @@ export default function ProctorSessionsPage({ params }: { params: { id: string }
       if (!silent) setLoading(true);
       else setRefreshing(true);
 
-      const res = await proctorService.getExamSessions(params.id);
+      const res = await proctorService.getExamSessions(examId);
       setSessions(res.data);
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Failed to load active monitoring logs.");
@@ -68,7 +70,7 @@ export default function ProctorSessionsPage({ params }: { params: { id: string }
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [params.id]);
+  }, [examId]);
 
   if (loading) {
     return (
