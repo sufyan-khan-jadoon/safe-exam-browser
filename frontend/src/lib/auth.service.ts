@@ -1,5 +1,15 @@
 import { api } from "./api";
-import { SignupInput, LoginInput } from "../../../backend/src/validators/auth.validator";
+
+export interface SignupInput {
+  fullName?: string;
+  email?: string;
+  password?: string;
+}
+
+export interface LoginInput {
+  email?: string;
+  password?: string;
+}
 
 export const authService = {
   signup: async (data: SignupInput) => {
