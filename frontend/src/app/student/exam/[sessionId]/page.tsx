@@ -46,7 +46,6 @@ export default function StudentExamPage({ params }: { params: { sessionId: strin
       const { exam, questions: fetchedQuestions, savedAnswers } = res.data;
 
       setExam(exam);
-      setQuestions(fetchedQuestions);
 
       // Prepopulate saved answers from DB
       const answersMap: Record<string, string> = {};
@@ -54,6 +53,28 @@ export default function StudentExamPage({ params }: { params: { sessionId: strin
         answersMap[ans.questionId] = ans.answerText;
       });
       setAnswers(answersMap);
+
+      // Shuffle options helper to prevent cheating
+      const shuffleArray = (array: string[]) => {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      };
+
+      const processedQuestions = fetchedQuestions.map((q: Question) => {
+        if (q.questionType === "MCQ") {
+          return {
+            ...q,
+            options: shuffleArray(q.options),
+          };
+        }
+        return q;
+      });
+
+      setQuestions(processedQuestions);
 
       // Calculate server time left
       const sessionRes = res.data.session || {}; // fallback if session start is passed

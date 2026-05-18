@@ -101,10 +101,7 @@ export default function ExamQuestionsPage({ params }: { params: Promise<{ id: st
         toast.error("MCQ must have at least 2 options");
         return;
       }
-      if (!payloadCorrectAnswer || !filteredOptions.includes(payloadCorrectAnswer)) {
-        toast.error("Please select a valid correct answer option");
-        return;
-      }
+      payloadCorrectAnswer = filteredOptions[0];
       payloadOptions = filteredOptions;
     } else if (questionType === "TRUE_FALSE") {
       payloadOptions = ["true", "false"];
@@ -401,20 +398,19 @@ export default function ExamQuestionsPage({ params }: { params: Promise<{ id: st
                     <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
                       {options.map((opt, index) => (
                         <div key={index} className="flex items-center space-x-2">
-                          <input
-                            type="radio"
-                            name="correct-mcq"
-                            checked={correctAnswer !== "" && correctAnswer === opt}
-                            disabled={!opt.trim()}
-                            onChange={() => setCorrectAnswer(opt)}
-                            className="h-4 w-4 rounded-full border-zinc-300 text-primary focus:ring-primary cursor-pointer disabled:cursor-not-allowed"
-                            title="Select as correct answer"
-                          />
-                          <Input
-                            placeholder={`Option ${index + 1}`}
-                            value={opt}
-                            onChange={(e) => handleOptionChange(index, e.target.value)}
-                          />
+                          <div className="flex-grow relative">
+                            <Input
+                              placeholder={`Option ${index + 1}`}
+                              value={opt}
+                              onChange={(e) => handleOptionChange(index, e.target.value)}
+                              className={cn(index === 0 && "pr-28 border-green-500/50 dark:border-green-800/50 bg-green-50/5 dark:bg-green-950/5")}
+                            />
+                            {index === 0 && (
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-green-600 dark:text-green-500 uppercase tracking-wider bg-green-500/10 dark:bg-green-500/20 px-2 py-0.5 rounded-full select-none">
+                                Correct Choice
+                              </span>
+                            )}
+                          </div>
                           <Button
                             type="button"
                             variant="ghost"
@@ -427,11 +423,9 @@ export default function ExamQuestionsPage({ params }: { params: Promise<{ id: st
                         </div>
                       ))}
                     </div>
-                    {correctAnswer === "" && (
-                      <p className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">
-                        * Please select one radio button to mark the correct choice.
-                      </p>
-                    )}
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 leading-normal">
+                      💡 <strong>Note:</strong> The first choice input (Option 1) is automatically treated as the correct answer. The options will be randomly shuffled (randomized) for students when they take the exam to prevent cheating.
+                    </p>
                   </div>
                 )}
 
