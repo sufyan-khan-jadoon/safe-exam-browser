@@ -200,14 +200,7 @@ export default function ExamQuestionsPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      {isPointsMismatch && (
-        <div className="flex items-center p-4 rounded-md bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900/50 text-yellow-800 dark:text-yellow-400 gap-3">
-          <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-          <p className="text-sm">
-            Warning: The sum of points from all questions (<strong>{sumPoints} pts</strong>) does not match the configured Exam Total Marks (<strong>{exam?.totalMarks} pts</strong>).
-          </p>
-        </div>
-      )}
+
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Questions List */}
@@ -221,10 +214,15 @@ export default function ExamQuestionsPage({ params }: { params: Promise<{ id: st
                 </CardDescription>
               </div>
               <div className="text-right">
-                <span className="text-sm font-semibold block">Total Points</span>
-                <span className={cn("text-lg font-bold font-mono", isPointsMismatch ? "text-yellow-600 dark:text-yellow-400" : "text-green-600 dark:text-green-400")}>
-                  {sumPoints} / {exam?.totalMarks}
+                <span className="text-sm font-semibold block text-zinc-400">Total Marks</span>
+                <span className="text-lg font-bold font-mono text-primary">
+                  {exam?.totalMarks} pts
                 </span>
+                {questions.length > 0 && (
+                  <span className="text-xs text-zinc-500 block">
+                    ~{(exam ? exam.totalMarks / questions.length : 0).toFixed(1)} pts / question
+                  </span>
+                )}
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -250,8 +248,8 @@ export default function ExamQuestionsPage({ params }: { params: Promise<{ id: st
                           <span className="text-xs text-zinc-500 font-semibold uppercase">
                             {q.questionType.replace("_", " ")}
                           </span>
-                          <span className="text-xs bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full text-zinc-600 dark:text-zinc-400">
-                            {q.points} pt{q.points > 1 ? "s" : ""}
+                          <span className="text-xs bg-green-500/10 text-green-600 dark:text-green-500 px-2 py-0.5 rounded-full font-bold">
+                            ~{exam ? (exam.totalMarks / questions.length).toFixed(1) : 0} pts
                           </span>
                         </div>
                         <div className="flex items-center space-x-1">
@@ -371,15 +369,7 @@ export default function ExamQuestionsPage({ params }: { params: Promise<{ id: st
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Points / Marks</label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={points}
-                    onChange={(e) => setPoints(Number(e.target.value))}
-                  />
-                </div>
+
 
                 {/* MCQ Builder */}
                 {questionType === "MCQ" && (

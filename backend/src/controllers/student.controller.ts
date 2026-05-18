@@ -242,16 +242,17 @@ export const submitExam = asyncHandler(async (req: Request, res: Response) => {
     where: { sessionId },
   });
 
-  // Calculate score
+  // Calculate score by distributing total marks equally to each question
   let obtainedMarks = 0;
-  studentAnswers.forEach((ans) => {
-    if (ans.isCorrect) {
-      const q = session.exam.questions.find((q) => q.id === ans.questionId);
-      if (q) {
-        obtainedMarks += q.points;
-      }
-    }
-  });
+  const totalQuestions = session.exam.questions.length;
+  if (totalQuestions > 0) {
+    const correctCount = studentAnswers.filter((ans) => {
+      if (!ans.isCorrect) return false;
+      return session.exam.questions.some((q) => q.id === ans.questionId);
+    }).length;
+
+    obtainedMarks = Math.round((correctCount / totalQuestions) * session.exam.totalMarks);
+  }
 
   // Update session status
   const updatedSession = await prisma.examSession.update({
