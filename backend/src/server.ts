@@ -11,6 +11,7 @@ import { prisma } from "./config/database";
 import authRoutes from "./routes/auth.routes";
 import verificationRoutes from "./routes/verification.routes";
 import passwordRoutes from "./routes/password.routes";
+import examRoutes from "./routes/exam.routes";
 
 const app = express();
 
@@ -55,6 +56,7 @@ app.get("/api/health", async (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/verification", verificationRoutes);
 app.use("/api/password", passwordRoutes);
+app.use("/api/exams", examRoutes);
 
 // Error Handler
 app.use(errorHandler);
