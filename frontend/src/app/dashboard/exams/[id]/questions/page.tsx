@@ -1,18 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { questionService, QuestionData } from "@/lib/question.service";
 import { examService, ExamData } from "@/lib/exam.service";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Plus, Trash2, Edit2, CheckCircle2, AlertTriangle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-export default function ExamQuestionsPage({ params }: { params: { id: string } }) {
+export default function ExamQuestionsPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
+  const examId = resolvedParams.id;
   const router = useRouter();
   const [exam, setExam] = useState<ExamData | null>(null);
   const [questions, setQuestions] = useState<QuestionData[]>([]);
@@ -31,8 +33,8 @@ export default function ExamQuestionsPage({ params }: { params: { id: string } }
     try {
       setLoading(true);
       const [examRes, questionsRes] = await Promise.all([
-        examService.getExamById(params.id),
-        questionService.getQuestionsForExam(params.id),
+        examService.getExamById(examId),
+        questionService.getQuestionsForExam(examId),
       ]);
       setExam(examRes.data);
       setQuestions(questionsRes.data);
@@ -46,7 +48,7 @@ export default function ExamQuestionsPage({ params }: { params: { id: string } }
 
   useEffect(() => {
     loadData();
-  }, [params.id]);
+  }, [examId]);
 
   // Reset Form
   const resetForm = () => {
@@ -132,12 +134,12 @@ export default function ExamQuestionsPage({ params }: { params: { id: string } }
         await questionService.updateQuestion(editingQuestionId, questionPayload);
         toast.success("Question updated successfully!");
       } else {
-        await questionService.createQuestion(params.id, questionPayload);
+        await questionService.createQuestion(examId, questionPayload);
         toast.success("Question added successfully!");
       }
 
       resetForm();
-      const res = await questionService.getQuestionsForExam(params.id);
+      const res = await questionService.getQuestionsForExam(examId);
       setQuestions(res.data);
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Failed to save question");
@@ -167,7 +169,7 @@ export default function ExamQuestionsPage({ params }: { params: { id: string } }
     try {
       await questionService.deleteQuestion(id);
       toast.success("Question deleted successfully!");
-      const res = await questionService.getQuestionsForExam(params.id);
+      const res = await questionService.getQuestionsForExam(examId);
       setQuestions(res.data);
       if (editingQuestionId === id) resetForm();
     } catch (err: any) {
@@ -189,11 +191,12 @@ export default function ExamQuestionsPage({ params }: { params: { id: string } }
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
-        <Button variant="outline" size="icon" asChild>
-          <Link href="/dashboard/exams">
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-        </Button>
+        <Link
+          href="/dashboard/exams"
+          className={cn(buttonVariants({ variant: "outline", size: "icon" }))}
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </Link>
         <div>
           <h2 className="text-2xl font-bold tracking-tight">{exam?.examTitle}</h2>
           <p className="text-zinc-500">Manage questions and points distribution.</p>
