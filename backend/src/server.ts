@@ -45,7 +45,7 @@ if (env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-// Health Check
+// Health Check (Trigger Reload)
 app.get("/api/health", async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
@@ -67,11 +67,13 @@ app.use("/api", proctorRoutes); // Mounts proctoring endpoints under /api/...
 // Error Handler
 app.use(errorHandler);
 
-const PORT = env.PORT;
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running in ${env.NODE_ENV} mode on port ${PORT}`);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running in ${env.NODE_ENV} mode on port ${PORT}`);
-});
+export default app;
 
 
 
