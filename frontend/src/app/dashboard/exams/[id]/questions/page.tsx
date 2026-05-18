@@ -491,9 +491,8 @@ export default function ExamQuestionsPage({ params }: { params: { id: string } }
                 <Button type="submit" size="sm" disabled={submitting}>
                   {submitting ? "Saving..." : editingQuestionId ? "Save Changes" : "Add Question"}
                 </Button>
-              </CardFooter>
             </form>
-          </form>
+          </Card>
         </div>
       </div>
     </div>
