@@ -2,14 +2,15 @@ import { z } from "zod";
 
 const QuestionTypeEnum = z.enum(["MCQ", "TRUE_FALSE", "SHORT_ANSWER"]);
 
-export const createQuestionSchema = z
-  .object({
-    questionText: z.string().min(3, "Question text must be at least 3 characters").max(1000),
-    questionType: QuestionTypeEnum,
-    options: z.array(z.string().min(1, "Option cannot be empty")).default([]),
-    correctAnswer: z.string().min(1, "Correct answer is required"),
-    points: z.coerce.number().int().positive("Points must be a positive integer").default(1),
-  })
+export const questionBaseSchema = z.object({
+  questionText: z.string().min(3, "Question text must be at least 3 characters").max(1000),
+  questionType: QuestionTypeEnum,
+  options: z.array(z.string().min(1, "Option cannot be empty")).default([]),
+  correctAnswer: z.string().min(1, "Correct answer is required"),
+  points: z.coerce.number().int().positive("Points must be a positive integer").default(1),
+});
+
+export const createQuestionSchema = questionBaseSchema
   .refine(
     (data) => {
       if (data.questionType === "MCQ") {
@@ -47,6 +48,6 @@ export const createQuestionSchema = z
     }
   );
 
-export const updateQuestionSchema = createQuestionSchema.partial();
+export const updateQuestionSchema = questionBaseSchema.partial();
 export type CreateQuestionInput = z.infer<typeof createQuestionSchema>;
 export type UpdateQuestionInput = z.infer<typeof updateQuestionSchema>;
