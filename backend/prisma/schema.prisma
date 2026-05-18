@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Teacher {
+  id                      String    @id @default(uuid())
+  fullName                String
+  email                   String    @unique
+  password                String
+  isVerified              Boolean   @default(false)
+  verificationToken       String?
+  verificationTokenExpiry DateTime?
+  resetToken              String?
+  resetTokenExpiry        DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  exams                   Exam[]
+}
+
+model Exam {
+  id                String        @id @default(uuid())
+  examTitle         String
+  examDescription   String?
+  examKey           String        @unique
+  durationInMinutes Int
+  totalMarks        Int
+  passingMarks      Int
+  examStartDate     DateTime
+  examEndDate       DateTime
+  isPublished       Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  teacherId         String
+  teacher           Teacher       @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  questions         Question[]
+  sessions          ExamSession[]
+}
+
+model Question {
+  id            String          @id @default(uuid())
+  questionText  String
+  optionA       String
+  optionB       String
+  optionC       String
+  optionD       String
+  correctAnswer String          // "A", "B", "C", or "D"
+  marks         Int             @default(1)
+  order         Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  examId        String
+  exam          Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+}
+
+model Student {
+  id         String        @id @default(uuid())
+  fullName   String
+  gender     String
+  rollNumber String        @unique
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  sessions   ExamSession[]
+}
+
+model ExamSession {
+  id                   String          @id @default(uuid())
+  examStartTime        DateTime        @default(now())
+  examEndTime          DateTime?
+  isCompleted          Boolean         @default(false)
+  currentQuestionIndex Int             @default(0)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  studentId            String
+  student              Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  examId               String
+  exam                 Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  answers              StudentAnswer[]
+  result               Result?
+  cheatLogs            CheatLog[]
+
+  @@unique([studentId, examId])
+}
+
+model StudentAnswer {
+  id           String      @id @default(uuid())
+  answer       String?     // "A", "B", "C", or "D" (null if not answered)
+  isCorrect    Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  sessionId    String
+  session      ExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  questionId   String
+
+  @@unique([sessionId, questionId])
+}
+
+model Result {
+  id             String      @id @default(uuid())
+  marksObtained  Int
+  percentage     Float
+  grade          String
+  correctAnswers Int
+  wrongAnswers   Int
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  sessionId      String      @unique
+  session        ExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model CheatLog {
+  id          String      @id @default(uuid())
+  type        String      // "tab_switch", "fullscreen_exit", "focus_loss", etc.
+  description String?
+  timestamp   DateTime    @default(now())
+  sessionId   String
+  session     ExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
