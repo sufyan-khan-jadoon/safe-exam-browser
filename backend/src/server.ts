@@ -23,6 +23,7 @@ app.use(helmet());
 const allowedOrigins = [
   env.CLIENT_URL,
   "http://localhost:3000",
+  "http://127.0.0.1:3000",
 ];
 
 app.use(
@@ -31,10 +32,11 @@ app.use(
       if (!origin) return callback(null, true);
       const isAllowed = allowedOrigins.includes(origin) || 
                         origin.endsWith(".vercel.app") ||
-                        /^http:\/\/localhost:\d+$/.test(origin);
+                        /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
       if (isAllowed) {
         callback(null, true);
       } else {
+        console.error(`CORS blocked for origin: ${origin}`);
         callback(new Error("Not allowed by CORS"));
       }
     },

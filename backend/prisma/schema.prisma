@@ -37,22 +37,16 @@ model Exam {
   updatedAt         DateTime      @updatedAt
   teacherId         String
   teacher           Teacher       @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  questions         Question[]
   sessions          ExamSession[]
-}
-
-enum QuestionType {
-  MCQ
-  TRUE_FALSE
-  SHORT_ANSWER
+  questions         Question[]
 }
 
 model Question {
   id            String          @id @default(uuid())
   questionText  String
   questionType  QuestionType
-  options       String[]        // Holds choices for MCQ
-  correctAnswer String          // Option text, true/false, or keyword
+  options       String[]
+  correctAnswer String
   points        Int             @default(1)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -70,12 +64,6 @@ model Student {
   sessions   ExamSession[]
 }
 
-enum SessionStatus {
-  STARTED
-  PAUSED
-  COMPLETED
-}
-
 model ExamSession {
   id            String          @id @default(uuid())
   status        SessionStatus   @default(STARTED)
@@ -85,11 +73,11 @@ model ExamSession {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   studentId     String
-  student       Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
   examId        String
-  exam          Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
-  answers       StudentAnswer[]
   cheatLogs     CheatLog[]
+  exam          Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student       Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  answers       StudentAnswer[]
 
   @@unique([studentId, examId])
 }
@@ -101,18 +89,30 @@ model StudentAnswer {
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   sessionId  String
-  session    ExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   questionId String
   question   Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  session    ExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, questionId])
 }
 
 model CheatLog {
   id          String      @id @default(uuid())
-  type        String      // "tab_switch", "fullscreen_exit", "focus_loss", etc.
+  type        String
   description String?
   timestamp   DateTime    @default(now())
   sessionId   String
   session     ExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+enum QuestionType {
+  MCQ
+  TRUE_FALSE
+  SHORT_ANSWER
+}
+
+enum SessionStatus {
+  STARTED
+  PAUSED
+  COMPLETED
 }
