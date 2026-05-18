@@ -67,6 +67,8 @@ app.use("/api", proctorRoutes); // Mounts proctoring endpoints under /api/...
 // Error Handler
 app.use(errorHandler);
 
+const PORT = env.PORT;
+
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`🚀 Server running in ${env.NODE_ENV} mode on port ${PORT}`);
